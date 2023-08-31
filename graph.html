@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Rasa Core Visualisation</title>
+    <script src="https://dagrejs.github.io/project/dagre-d3/latest/dagre-d3.min.js"></script>
+    <script src="https://dagrejs.github.io/project/dagre/latest/dagre.min.js"></script>
+    <script src="https://d3js.org/d3.v4.js"></script>
+    <script src="https://dagrejs.github.io/project/graphlib-dot/v0.6.3/graphlib-dot.js"></script>
+</head>
+<body>
+<div id="errormsg" style="color: #b00"></div>
+<svg>
+    <style id="graph-style">
+        .node.invisible > rect {
+            display: none;
+        }
+
+        .node.start > rect {
+            fill: #7f7;
+            rx: 30;
+            ry: 18;
+        }
+
+        .node.end > rect {
+            fill: #f77;
+            rx: 30;
+            ry: 18;
+        }
+
+        .node:not(.active) > rect, .node:not(.active) > .label {
+            opacity: 0.4;
+        }
+
+        .edgePath:not(.active) path {
+            opacity: 0.4;
+        }
+
+        .node.ellipsis > rect {
+            fill: #CCC;
+        }
+
+        .node.intent > rect {
+            fill: #7ff;
+        }
+
+        .node.dashed > rect {
+            stroke-dasharray: 5;
+        }
+
+        text {
+            font-weight: 300;
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serf, serif;
+            font-size: 14px;
+            color: #1f1d1d;
+        }
+
+        .node rect {
+            stroke: #444;
+            fill: #fff;
+            stroke-width: 1.5px;
+        }
+
+        .edgePath path {
+            stroke: #333;
+            stroke-width: 1.5px;
+        }
+
+        svg {
+            position: fixed;
+            top: 10px;
+            left: 0;
+            height: 100%;
+            width: 100%
+        }
+    </style>
+    <g></g>
+</svg>
+<script>
+
+  function serveGraph() {
+    let oldInputGraphValue;
+
+    const url = 'visualization.dot';
+    const refreshInterval = 500;
+
+    // trigger a refresh by fetching an updated graph
+    setInterval(function () {
+      fetch(url).then(r => r.text()).then(dot => {
+        document.getElementById('errormsg').innerHTML = '';
+        if (oldInputGraphValue === dot) return;
+
+        oldInputGraphValue = dot;
+        drawGraph(dot);
+      }).catch(err => {
+        document.getElementById('errormsg').innerHTML =
+          'Failed to update plot. (' + err.message + ')';
+      });
+    }, refreshInterval);
+  }
+
+  function drawGraph(graph) {
+    let g = graphlibDot.read(graph);
+    // Set margins, if not present
+    if (!g.graph().hasOwnProperty("marginx") &&
+      !g.graph().hasOwnProperty("marginy")) {
+      g.graph().marginx = 20;
+      g.graph().marginy = 20;
+    }
+    g.graph().transition = function (selection) {
+      return selection.transition().duration(300);
+    };
+    // Render the graph into svg g
+    d3.select("svg g").call(render, g);
+  }
+  // Set up zoom support
+  const svg = d3.select("svg"),
+    inner = d3.select("svg g"),
+    zoom = d3.zoom().on("zoom", function () {
+      inner.attr("transform", d3.event.transform);
+    });
+  svg.call(zoom);
+
+  // Create and configure the renderer
+  const render = dagreD3.render();
+
+  let isClient = false;
+  isClient = true;
+
+  if (isClient) {
+    // Mark all nodes and their edges as active
+    cssRules = document.getElementById('graph-style').sheet.cssRules;
+    cssRules[3].style.opacity = 1;
+    cssRules[4].style.opacity = 1;
+
+    let graph;
+    graph = `digraph  {
+0 [class="start active", fillcolor=green, fontsize=12, label=START, style=filled];
+"-1" [class=end, fillcolor=red, fontsize=12, label=END, style=filled];
+1 [class="", fontsize=12, label=utter_demo_or_link];
+2 [class="", fontsize=12, label=utter_fraud_management];
+3 [class="", fontsize=12, label=utter_demo_or_link];
+4 [class="", fontsize=12, label=utter_improve_dispute];
+5 [class="", fontsize=12, label=utter_demo_or_link];
+6 [class="", fontsize=12, label=utter_aml];
+7 [class="", fontsize=12, label=utter_demo_or_link];
+8 [class="", fontsize=12, label=utter_complaint_management];
+9 [class="", fontsize=12, label=utter_demo_or_link];
+10 [class="", fontsize=12, label=utter_automate_paper_based_workflows];
+11 [class="", fontsize=12, label=utter_demo_or_link];
+12 [class="", fontsize=12, label=utter_bsa_management];
+13 [class="", fontsize=12, label=utter_demo_or_link];
+14 [class="", fontsize=12, label=utter_government_enhance_case_management];
+15 [class="", fontsize=12, label=utter_demo_or_link];
+16 [class="", fontsize=12, label=utter_government_streamline_licensing];
+17 [class="", fontsize=12, label=utter_demo_or_link];
+18 [class="", fontsize=12, label=utter_government_complaint_management];
+19 [class="", fontsize=12, label=utter_demo_or_link];
+20 [class="", fontsize=12, label=utter_government_generate_reports];
+21 [class="", fontsize=12, label=utter_demo_or_link];
+22 [class="", fontsize=12, label=utter_inspection_enforcement];
+23 [class="", fontsize=12, label=utter_demo_or_link];
+24 [class="", fontsize=12, label=utter_insurance_case_management];
+25 [class="", fontsize=12, label=utter_demo_or_link];
+26 [class="", fontsize=12, label=utter_insurance_claims_management];
+27 [class="", fontsize=12, label=utter_demo_or_link];
+28 [class="", fontsize=12, label=utter_insurance_complaint_management];
+29 [class="", fontsize=12, label=utter_demo_or_link];
+30 [class="", fontsize=12, label=utter_insurance_business_analytics];
+31 [class="", fontsize=12, label=utter_demo_or_link];
+32 [class="", fontsize=12, label=utter_healthcare_electronic_health_records];
+33 [class="", fontsize=12, label=utter_demo_or_link];
+34 [class="", fontsize=12, label=utter_healthcare_transplant_patient_care];
+35 [class="", fontsize=12, label=utter_demo_or_link];
+36 [class="", fontsize=12, label=utter_healthcare_dialysis_patient_care];
+37 [class="", fontsize=12, label=utter_demo_or_link];
+38 [class="", fontsize=12, label=utter_healthcare_bi_reporting];
+39 [class="", fontsize=12, label=utter_demo_or_link];
+40 [class="", fontsize=12, label=utter_healthcare_medical_forms];
+41 [class="", fontsize=12, label=utter_demo_or_link];
+42 [class="", fontsize=12, label=utter_bs_case_management];
+43 [class="", fontsize=12, label=utter_demo_or_link];
+44 [class="", fontsize=12, label=utter_bs_inspection];
+45 [class="", fontsize=12, label=utter_demo_or_link];
+46 [class="", fontsize=12, label=utter_bs_credential_management];
+47 [class="", fontsize=12, label=utter_demo_or_link];
+48 [class="", fontsize=12, label=utter_bs_bi_reporting];
+49 [class="", fontsize=12, label=utter_demo_or_link];
+50 [class="", fontsize=12, label=utter_bs_database_search];
+51 [class="", fontsize=12, label=utter_greet];
+52 [class="", fontsize=12, label=utter_career_op];
+54 [class="", fontsize=12, label=utter_solution];
+55 [class="", fontsize=12, label=utter_business_solutions];
+80 [class="", fontsize=12, label=utter_healthcare];
+105 [class="", fontsize=12, label=utter_insurance];
+125 [class="", fontsize=12, label=utter_government];
+150 [class="", fontsize=12, label=utter_banking];
+178 [class="", fontsize=12, label="..."];
+179 [class="", fontsize=12, label=utter_iamabot];
+181 [class="", fontsize=12, label=utter_out_of_scope];
+183 [class="", fontsize=12, label=simple_info_form];
+185 [class="", fontsize=12, label=simple_info_form];
+186 [class="", fontsize=12, label=action_save_conversation];
+187 [class="", fontsize=12, label=action_send_email];
+189 [class="", fontsize=12, label=utter_welcome];
+190 [class=intent, fillcolor=lightblue, label="what do you have on fraud management", shape=rect, style=filled];
+191 [class=intent, fillcolor=lightblue, label="improve dispute resolution process in banking", shape=rect, style=filled];
+192 [class=intent, fillcolor=lightblue, label=aml, shape=rect, style=filled];
+193 [class=intent, fillcolor=lightblue, label="what about complaint management", shape=rect, style=filled];
+194 [class=intent, fillcolor=lightblue, label="automated paper based workflows", shape=rect, style=filled];
+195 [class=intent, fillcolor=lightblue, label="bsa management", shape=rect, style=filled];
+196 [class=intent, fillcolor=lightblue, label="how can i enhance government case management", shape=rect, style=filled];
+197 [class=intent, fillcolor=lightblue, label="i want to know about streamline licensing in government", shape=rect, style=filled];
+198 [class=intent, fillcolor=lightblue, label="goverment complaint management", shape=rect, style=filled];
+199 [class=intent, fillcolor=lightblue, label="adhoc reports", shape=rect, style=filled];
+200 [class=intent, fillcolor=lightblue, label=inspection, shape=rect, style=filled];
+201 [class=intent, fillcolor=lightblue, label="what you provide on insurance case mangement", shape=rect, style=filled];
+202 [class=intent, fillcolor=lightblue, label=insurance_claims_management, shape=rect, style=filled];
+203 [class=intent, fillcolor=lightblue, label="tell me about insurance complaint management", shape=rect, style=filled];
+204 [class=intent, fillcolor=lightblue, label="tell me about insurance business analytics", shape=rect, style=filled];
+205 [class=intent, fillcolor=lightblue, label="what do you have on electronic health records", shape=rect, style=filled];
+206 [class=intent, fillcolor=lightblue, label="transplant patient care", shape=rect, style=filled];
+207 [class=intent, fillcolor=lightblue, label="tell me about dialysis patient care", shape=rect, style=filled];
+208 [class=intent, fillcolor=lightblue, label="bi reporting on healthcare", shape=rect, style=filled];
+209 [class=intent, fillcolor=lightblue, label="electronic medical forms", shape=rect, style=filled];
+210 [class=intent, fillcolor=lightblue, label="enterprise case management", shape=rect, style=filled];
+211 [class=intent, fillcolor=lightblue, label="what do you have on business inspection", shape=rect, style=filled];
+212 [class=intent, fillcolor=lightblue, label="business credential management", shape=rect, style=filled];
+213 [class=intent, fillcolor=lightblue, label="business bi reporting", shape=rect, style=filled];
+214 [class=intent, fillcolor=lightblue, label="tell me about business database search", shape=rect, style=filled];
+215 [class=intent, fillcolor=lightblue, label="hey there", shape=rect, style=filled];
+216 [class=intent, fillcolor=lightblue, label="get me the link", shape=rect, style=filled];
+217 [class=intent, fillcolor=lightblue, label=link, shape=rect, style=filled];
+218 [class=intent, fillcolor=lightblue, label="get me the link", shape=rect, style=filled];
+219 [class=intent, fillcolor=lightblue, label="i want a link", shape=rect, style=filled];
+220 [class=intent, fillcolor=lightblue, label="i want to read on this topic for now", shape=rect, style=filled];
+221 [class=intent, fillcolor=lightblue, label="i will read", shape=rect, style=filled];
+222 [class=intent, fillcolor=lightblue, label="i want to read on this topic for now", shape=rect, style=filled];
+223 [class=intent, fillcolor=lightblue, label="give me the link", shape=rect, style=filled];
+224 [class=intent, fillcolor=lightblue, label="give me the link", shape=rect, style=filled];
+225 [class=intent, fillcolor=lightblue, label="get me the link", shape=rect, style=filled];
+226 [class=intent, fillcolor=lightblue, label="give me the link", shape=rect, style=filled];
+227 [class=intent, fillcolor=lightblue, label="i want to read on this topic for now", shape=rect, style=filled];
+228 [class=intent, fillcolor=lightblue, label="i want to read on this topic for now", shape=rect, style=filled];
+229 [class=intent, fillcolor=lightblue, label="get me the link", shape=rect, style=filled];
+230 [class=intent, fillcolor=lightblue, label="i want a link", shape=rect, style=filled];
+231 [class=intent, fillcolor=lightblue, label="i want to read on this topic for now", shape=rect, style=filled];
+232 [class=intent, fillcolor=lightblue, label="i want a link", shape=rect, style=filled];
+233 [class=intent, fillcolor=lightblue, label=link, shape=rect, style=filled];
+234 [class=intent, fillcolor=lightblue, label="i want a link", shape=rect, style=filled];
+235 [class=intent, fillcolor=lightblue, label="i want to read on this topic for now", shape=rect, style=filled];
+236 [class=intent, fillcolor=lightblue, label="i want a link", shape=rect, style=filled];
+237 [class=intent, fillcolor=lightblue, label="i want a link", shape=rect, style=filled];
+238 [class=intent, fillcolor=lightblue, label="i will read", shape=rect, style=filled];
+239 [class=intent, fillcolor=lightblue, label="i want to read on this topic for now", shape=rect, style=filled];
+240 [class=intent, fillcolor=lightblue, label="get me the link", shape=rect, style=filled];
+241 [class=intent, fillcolor=lightblue, label="/career_op", shape=rect, style=filled];
+242 [class=intent, fillcolor=lightblue, label=casual, shape=rect, style=filled];
+243 [class=intent, fillcolor=lightblue, label="/business_solutions", shape=rect, style=filled];
+244 [class=intent, fillcolor=lightblue, label=healthcare, shape=rect, style=filled];
+245 [class=intent, fillcolor=lightblue, label=insurance, shape=rect, style=filled];
+246 [class=intent, fillcolor=lightblue, label="can i ask about government services", shape=rect, style=filled];
+247 [class=intent, fillcolor=lightblue, label=banking, shape=rect, style=filled];
+248 [class=intent, fillcolor=lightblue, label="tell me about business database search", shape=rect, style=filled];
+249 [class=intent, fillcolor=lightblue, label="business intelligence reporting", shape=rect, style=filled];
+250 [class=intent, fillcolor=lightblue, label="tell me about credential management", shape=rect, style=filled];
+251 [class=intent, fillcolor=lightblue, label="tell me about business inspections", shape=rect, style=filled];
+252 [class=intent, fillcolor=lightblue, label="business enterprise case management", shape=rect, style=filled];
+253 [class=intent, fillcolor=lightblue, label="electronic medical forms", shape=rect, style=filled];
+254 [class=intent, fillcolor=lightblue, label="business intelligence reporting on healthcare", shape=rect, style=filled];
+255 [class=intent, fillcolor=lightblue, label="dialysis patient care", shape=rect, style=filled];
+256 [class=intent, fillcolor=lightblue, label="do you have anything on transplant patient care?", shape=rect, style=filled];
+257 [class=intent, fillcolor=lightblue, label="what do you have on electronic health records", shape=rect, style=filled];
+258 [class=intent, fillcolor=lightblue, label="tell me about insurance business analytics", shape=rect, style=filled];
+259 [class=intent, fillcolor=lightblue, label="i am interested in insurance complaint management", shape=rect, style=filled];
+260 [class=intent, fillcolor=lightblue, label=insurance_claims_management, shape=rect, style=filled];
+261 [class=intent, fillcolor=lightblue, label="what you provide on insurance case mangement", shape=rect, style=filled];
+262 [class=intent, fillcolor=lightblue, label="lets go with enforcement", shape=rect, style=filled];
+263 [class=intent, fillcolor=lightblue, label="generate ADHOC reports", shape=rect, style=filled];
+264 [class=intent, fillcolor=lightblue, label="complaint management in government", shape=rect, style=filled];
+265 [class=intent, fillcolor=lightblue, label="streamline licensing", shape=rect, style=filled];
+266 [class=intent, fillcolor=lightblue, label="what about case management", shape=rect, style=filled];
+267 [class=intent, fillcolor=lightblue, label=bsa, shape=rect, style=filled];
+268 [class=intent, fillcolor=lightblue, label="automated paper", shape=rect, style=filled];
+269 [class=intent, fillcolor=lightblue, label="tell me more about banking complaint management", shape=rect, style=filled];
+270 [class=intent, fillcolor=lightblue, label=laundering, shape=rect, style=filled];
+271 [class=intent, fillcolor=lightblue, label="banking dispute", shape=rect, style=filled];
+272 [class=intent, fillcolor=lightblue, label="what do you have on fraud management", shape=rect, style=filled];
+273 [class=intent, fillcolor=lightblue, label="am I talking to a bot?", shape=rect, style=filled];
+274 [class=intent, fillcolor=lightblue, label="/nlu_fallback", shape=rect, style=filled];
+275 [class=intent, fillcolor=lightblue, label="can i request a demo?", shape=rect, style=filled];
+276 [class=intent, fillcolor=lightblue, label="thank you for your help", shape=rect, style=filled];
+0 -> 178  [class="", key=NONE, label=""];
+0 -> 190  [class="", key=0];
+0 -> 191  [class="", key=0];
+0 -> 192  [class="", key=0];
+0 -> 193  [class="", key=0];
+0 -> 194  [class="", key=0];
+0 -> 195  [class="", key=0];
+0 -> 196  [class="", key=0];
+0 -> 197  [class="", key=0];
+0 -> 198  [class="", key=0];
+0 -> 199  [class="", key=0];
+0 -> 200  [class="", key=0];
+0 -> 201  [class="", key=0];
+0 -> 202  [class="", key=0];
+0 -> 203  [class="", key=0];
+0 -> 204  [class="", key=0];
+0 -> 205  [class="", key=0];
+0 -> 206  [class="", key=0];
+0 -> 207  [class="", key=0];
+0 -> 208  [class="", key=0];
+0 -> 209  [class="", key=0];
+0 -> 210  [class="", key=0];
+0 -> 211  [class="", key=0];
+0 -> 212  [class="", key=0];
+0 -> 213  [class="", key=0];
+0 -> 214  [class="", key=0];
+0 -> 215  [class="", key=0];
+1 -> 216  [class="", key=0];
+2 -> "-1"  [class="", key=NONE, label=""];
+3 -> 217  [class="", key=0];
+4 -> "-1"  [class="", key=NONE, label=""];
+5 -> 218  [class="", key=0];
+6 -> "-1"  [class="", key=NONE, label=""];
+7 -> 219  [class="", key=0];
+8 -> "-1"  [class="", key=NONE, label=""];
+9 -> 220  [class="", key=0];
+10 -> "-1"  [class="", key=NONE, label=""];
+11 -> 221  [class="", key=0];
+12 -> "-1"  [class="", key=NONE, label=""];
+13 -> 222  [class="", key=0];
+14 -> "-1"  [class="", key=NONE, label=""];
+15 -> 223  [class="", key=0];
+16 -> "-1"  [class="", key=NONE, label=""];
+17 -> 224  [class="", key=0];
+18 -> "-1"  [class="", key=NONE, label=""];
+19 -> 225  [class="", key=0];
+20 -> "-1"  [class="", key=NONE, label=""];
+21 -> 226  [class="", key=0];
+22 -> "-1"  [class="", key=NONE, label=""];
+23 -> 227  [class="", key=0];
+24 -> "-1"  [class="", key=NONE, label=""];
+25 -> 228  [class="", key=0];
+26 -> "-1"  [class="", key=NONE, label=""];
+27 -> 229  [class="", key=0];
+28 -> "-1"  [class="", key=NONE, label=""];
+29 -> 230  [class="", key=0];
+30 -> "-1"  [class="", key=NONE, label=""];
+31 -> 231  [class="", key=0];
+32 -> "-1"  [class="", key=NONE, label=""];
+33 -> 232  [class="", key=0];
+34 -> "-1"  [class="", key=NONE, label=""];
+35 -> 233  [class="", key=0];
+36 -> "-1"  [class="", key=NONE, label=""];
+37 -> 234  [class="", key=0];
+38 -> "-1"  [class="", key=NONE, label=""];
+39 -> 235  [class="", key=0];
+40 -> "-1"  [class="", key=NONE, label=""];
+41 -> 236  [class="", key=0];
+42 -> "-1"  [class="", key=NONE, label=""];
+43 -> 237  [class="", key=0];
+44 -> "-1"  [class="", key=NONE, label=""];
+45 -> 238  [class="", key=0];
+46 -> "-1"  [class="", key=NONE, label=""];
+47 -> 239  [class="", key=0];
+48 -> "-1"  [class="", key=NONE, label=""];
+49 -> 240  [class="", key=0];
+50 -> "-1"  [class="", key=NONE, label=""];
+51 -> 241  [class="", key=0];
+51 -> 242  [class="", key=0];
+52 -> "-1"  [class="", key=NONE, label=""];
+54 -> 243  [class="", key=0];
+54 -> 244  [class="", key=0];
+54 -> 245  [class="", key=0];
+54 -> 246  [class="", key=0];
+54 -> 247  [class="", key=0];
+55 -> 248  [class="", key=0];
+55 -> 249  [class="", key=0];
+55 -> 250  [class="", key=0];
+55 -> 251  [class="", key=0];
+55 -> 252  [class="", key=0];
+80 -> 253  [class="", key=0];
+80 -> 254  [class="", key=0];
+80 -> 255  [class="", key=0];
+80 -> 256  [class="", key=0];
+80 -> 257  [class="", key=0];
+105 -> 258  [class="", key=0];
+105 -> 259  [class="", key=0];
+105 -> 260  [class="", key=0];
+105 -> 261  [class="", key=0];
+125 -> 262  [class="", key=0];
+125 -> 263  [class="", key=0];
+125 -> 264  [class="", key=0];
+125 -> 265  [class="", key=0];
+125 -> 266  [class="", key=0];
+150 -> 267  [class="", key=0];
+150 -> 268  [class="", key=0];
+150 -> 269  [class="", key=0];
+150 -> 270  [class="", key=0];
+150 -> 271  [class="", key=0];
+150 -> 272  [class="", key=0];
+178 -> 185  [class="", key=NONE, label=""];
+178 -> 273  [class="", key=0];
+178 -> 274  [class="", key=0];
+178 -> 275  [class="", key=0];
+178 -> 276  [class="", key=0];
+179 -> "-1"  [class="", key=NONE, label=""];
+181 -> "-1"  [class="", key=NONE, label=""];
+183 -> "-1"  [class="", key=NONE, label=""];
+185 -> 186  [class="", key=NONE, label=""];
+186 -> 187  [class="", key=NONE, label=""];
+187 -> "-1"  [class="", key=NONE, label=""];
+189 -> "-1"  [class="", key=NONE, label=""];
+190 -> 1  [class="", key=0];
+191 -> 3  [class="", key=0];
+192 -> 5  [class="", key=0];
+193 -> 7  [class="", key=0];
+194 -> 9  [class="", key=0];
+195 -> 11  [class="", key=0];
+196 -> 13  [class="", key=0];
+197 -> 15  [class="", key=0];
+198 -> 17  [class="", key=0];
+199 -> 19  [class="", key=0];
+200 -> 21  [class="", key=0];
+201 -> 23  [class="", key=0];
+202 -> 25  [class="", key=0];
+203 -> 27  [class="", key=0];
+204 -> 29  [class="", key=0];
+205 -> 31  [class="", key=0];
+206 -> 33  [class="", key=0];
+207 -> 35  [class="", key=0];
+208 -> 37  [class="", key=0];
+209 -> 39  [class="", key=0];
+210 -> 41  [class="", key=0];
+211 -> 43  [class="", key=0];
+212 -> 45  [class="", key=0];
+213 -> 47  [class="", key=0];
+214 -> 49  [class="", key=0];
+215 -> 51  [class="", key=0];
+216 -> 2  [class="", key=0];
+217 -> 4  [class="", key=0];
+218 -> 6  [class="", key=0];
+219 -> 8  [class="", key=0];
+220 -> 10  [class="", key=0];
+221 -> 12  [class="", key=0];
+222 -> 14  [class="", key=0];
+223 -> 16  [class="", key=0];
+224 -> 18  [class="", key=0];
+225 -> 20  [class="", key=0];
+226 -> 22  [class="", key=0];
+227 -> 24  [class="", key=0];
+228 -> 26  [class="", key=0];
+229 -> 28  [class="", key=0];
+230 -> 30  [class="", key=0];
+231 -> 32  [class="", key=0];
+232 -> 34  [class="", key=0];
+233 -> 36  [class="", key=0];
+234 -> 38  [class="", key=0];
+235 -> 40  [class="", key=0];
+236 -> 42  [class="", key=0];
+237 -> 44  [class="", key=0];
+238 -> 46  [class="", key=0];
+239 -> 48  [class="", key=0];
+240 -> 50  [class="", key=0];
+241 -> 52  [class="", key=0];
+242 -> 54  [class="", key=0];
+243 -> 55  [class="", key=0];
+244 -> 80  [class="", key=0];
+245 -> 105  [class="", key=0];
+246 -> 125  [class="", key=0];
+247 -> 150  [class="", key=0];
+248 -> 49  [class="", key=0];
+249 -> 47  [class="", key=0];
+250 -> 45  [class="", key=0];
+251 -> 43  [class="", key=0];
+252 -> 41  [class="", key=0];
+253 -> 39  [class="", key=0];
+254 -> 37  [class="", key=0];
+255 -> 35  [class="", key=0];
+256 -> 33  [class="", key=0];
+257 -> 31  [class="", key=0];
+258 -> 29  [class="", key=0];
+259 -> 27  [class="", key=0];
+260 -> 25  [class="", key=0];
+261 -> 23  [class="", key=0];
+262 -> 21  [class="", key=0];
+263 -> 19  [class="", key=0];
+264 -> 17  [class="", key=0];
+265 -> 15  [class="", key=0];
+266 -> 13  [class="", key=0];
+267 -> 11  [class="", key=0];
+268 -> 9  [class="", key=0];
+269 -> 7  [class="", key=0];
+270 -> 5  [class="", key=0];
+271 -> 3  [class="", key=0];
+272 -> 1  [class="", key=0];
+273 -> 179  [class="", key=0];
+274 -> 181  [class="", key=0];
+275 -> 183  [class="", key=0];
+276 -> 189  [class="", key=0];
+}
+`;
+    drawGraph(graph);
+  } else {
+    serveGraph();
+  }
+
+
+</script>
+</body>
+</html>
